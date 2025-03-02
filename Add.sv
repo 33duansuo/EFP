@@ -20,49 +20,14 @@
 //////////////////////////////////////////////////////////////////////////////////
 module Add1(
     input clk,
+    input cal,
     input [23:0] fp8Binary1, // 符号位(1)+指数位(4)+尾数位(19)
     input [23:0] fp8Binary2,
     // input [4:0] e_bit1, // e_bit1 (4位)
-    input [18:0] m_bit1, // m_bit1 动态位宽，范围1到19
-    input [18:0] m_bit2, // m_bit2 动态位宽，范围1到19
+    input [4:0] m_bit1, // m_bit1 动态位宽，范围1到19
+    input [4:0] m_bit2, // m_bit2 动态位宽，范围1到19
     // input [3:0] bias1,  // 固定为15
     // input [4:0] e_bit2, // e_bit2 (4位)
-    input  [5:0] M2B2[1:0][4:0][1:0][3:0],
-    input  [6:0] M3B2[1:0][5:0][1:0][7:0],
-    //
-    input  [7:0] M4B2[1:0][6:0][1:0][1:0],
-    input  [8:0] M5B2[1:0][7:0][1:0][1:0],
-    input  [9:0] M6B2[1:0][8:0][1:0][1:0],
-    input  [10:0] M7B2[1:0][9:0][1:0][1:0],
-    input  [11:0] M8B2[1:0][10:0][1:0][1:0],
-    input  [12:0] M9B2[1:0][11:0][1:0][1:0],
-    input  [13:0] M10B2[1:0][12:0][1:0][1:0],
-    input  [14:0] M11B2[1:0][13:0][1:0][1:0],
-    input  [15:0] M12B2[1:0][14:0][1:0][1:0],
-    input  [16:0] M13B2[1:0][15:0][1:0][1:0],
-    input  [17:0] M14B2[1:0][16:0][1:0][1:0],
-    input  [18:0] M15B2[1:0][17:0][1:0][1:0],
-    input  [19:0] M16B2[1:0][18:0][1:0][1:0],
-    input  [20:0] M17B2[1:0][19:0][1:0][1:0],
-    input  [21:0] M18B2[1:0][20:0][1:0][1:0],
-    input  [22:0] M19B2[1:0][21:0][1:0][1:0],
-    //  input  [7:0] M4B2[1:0][6:0][1:0][15:0],
-    // input  [8:0] M5B2[1:0][7:0][1:0][31:0],
-    // input  [9:0] M6B2[1:0][8:0][1:0][63:0],
-    // input  [10:0] M7B2[1:0][9:0][1:0][127:0],
-    // input  [11:0] M8B2[1:0][10:0][1:0][255:0],
-    // input  [12:0] M9B2[1:0][11:0][1:0][511:0],
-    // input  [13:0] M10B2[1:0][12:0][1:0][1023:0],
-    // input  [14:0] M11B2[1:0][13:0][1:0][2047:0],
-    // input  [15:0] M12B2[1:0][14:0][1:0][4095:0],
-    // input  [16:0] M13B2[1:0][15:0][1:0][8191:0],
-    // input  [17:0] M14B2[1:0][16:0][1:0][16383:0],
-    // input  [18:0] M15B2[1:0][17:0][1:0][32767:0],
-    // input  [19:0] M16B2[1:0][18:0][1:0][65535:0],
-    // input  [20:0] M17B2[1:0][19:0][1:0][131071:0],
-    // input  [21:0] M18B2[1:0][20:0][1:0][262143:0],
-    // input  [22:0] M19B2[1:0][21:0][1:0][524287:0],
-    
     // input [3:0] bias2,  // 固定为15
     output reg [4:0] result_bias, //  bias输出信息
     output reg [4:0] output_m_bits, //
@@ -99,7 +64,7 @@ module Add1(
     reg [18:0] fraction1, fraction2;
     reg [18:0] fraction_result;
     reg [22:0] result_bin;//最多23位
-    reg [18:0] result_m_bit;
+    reg [4:0] result_m_bit;
 
     reg [4:0] e_diff;
     reg [18:0]max_m_bit;
@@ -145,6 +110,84 @@ module Add1(
 
 
     end
+reg wea;
+reg [5:0] dina_M2B2;
+reg [6:0] dina_M3B2;
+reg [7:0] dina_M4B2;
+reg [8:0] dina_M5B2;
+reg [9:0] dina_M6B2;
+reg [10:0] dina_M7B2;
+reg [11:0] dina_M8B2;
+//
+reg [5:0] douta_M2B2;
+reg [6:0] douta_M3B2;
+reg [7:0] douta_M4B2;
+reg [8:0] douta_M5B2;
+reg [9:0] douta_M6B2;
+reg [10:0] douta_M7B2;
+reg [11:0] douta_M8B2;
+//
+reg [6:0] addra_M2B2;
+reg [7:0] addra_M3B2;
+reg [8:0] addra_M4B2;
+reg [9:0] addra_M5B2;
+reg [11:0] addra_M6B2;
+reg [12:0] addra_M7B2;
+reg [13:0] addra_M8B2;
+
+blk_mem_gen_0 M2B2 (
+  .clka(clk),    // input wire clka
+  .wea(wea),      // input wire [0 : 0] wea
+  .addra(addra_M2B2),  // input wire [6 : 0] addra
+  .dina(dina_M2B2),    // input wire [5 : 0] dina
+  .douta(douta_M2B2)  // output wire [5 : 0] douta
+);
+blk_mem_gen_1 M3B2 (
+  .clka(clk),    // input wire clka
+  .wea(wea),      // input wire [0 : 0] wea
+  .addra(addra_M3B2),  // input wire [7 : 0] addra
+  .dina(dina_M3B2),    // input wire [6 : 0] dina
+  .douta(douta_M3B2)  // output wire [6 : 0] douta
+);
+blk_mem_gen_2 M4B2 (
+  .clka(clk),    // input wire clka
+  .wea(wea),      // input wire [0 : 0] wea
+  .addra(addra_M4B2),  // input wire [8 : 0] addra
+  .dina(dina_M4B2),    // input wire [7 : 0] dina
+  .douta(douta_M4B2)  // output wire [7 : 0] douta
+);
+blk_mem_gen_3 M5B2 (
+  .clka(clk),    // input wire clka
+  .wea(wea),      // input wire [0 : 0] wea
+  .addra(addra_M5B2),  // input wire [9 : 0] addra
+  .dina(dina_M5B2),    // input wire [8 : 0] dina
+  .douta(douta_M5B2)  // output wire [8 : 0] douta
+);
+blk_mem_gen_4 M6B2(
+  .clka(clk),    // input wire clka
+  .wea(wea),      // input wire [0 : 0] wea
+  .addra(addra_M6B2),  // input wire [11 : 0] addra
+  .dina(dina_M6B2),    // input wire [9 : 0] dina
+  .douta(douta_M6B2)  // output wire [9 : 0] douta
+);
+blk_mem_gen_5 M7B2 (
+  .clka(clk),    // input wire clka
+  .wea(wea),      // input wire [0 : 0] wea
+  .addra(addra_M7B2),  // input wire [12 : 0] addra
+  .dina(dina_M7B2),    // input wire [10 : 0] dina
+  .douta(douta_M7B2)  // output wire [10 : 0] douta
+);
+blk_mem_gen_6 M8B2 (
+  .clka(clk),    // input wire clka
+  .wea(wea),      // input wire [0 : 0] wea
+  .addra(addra_M8B2),  // input wire [13 : 0] addra
+  .dina(dina_M8B2),    // input wire [11 : 0] dina
+  .douta(douta_M8B2)  // output wire [11 : 0] douta
+);
+
+
+
+
     always @(posedge clk) begin
         if (cnt_period == 1000000-1) begin
         cnt_period <=0;
@@ -154,7 +197,7 @@ module Add1(
 
     end
 
-    always @(*) begin
+    always @(posedge cal) begin
         cnt_period_temp = cnt_period;
         // 提取符号、指数和尾数(e_diff>=0)更大的为exponent1、fraction1
         if(fp8Binary1[22:19]>=fp8Binary2[22:19]) begin
@@ -316,258 +359,131 @@ module Add1(
                     //  $display("yse,max_m_bit == 2");
                     //  $display("M2B2_0_0[0][0]=",M2B2[0][0][0][0]);      
                     if (fractionBits2>=fractionBits1) begin
-                            result_bin=M2B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                            addra_M2B2 = (e_diff<<3)+fractionBits2-fractionBits1-1;
+                            result_bin=douta_M2B2+fractionBits1;
                         end else begin
-                            result_bin=M2B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
+                            addra_M2B2 = (e_diff<<3)+fractionBits1-fractionBits2-1+4;
+                            result_bin=douta_M2B2+fractionBits2;
                         end
                     // $display("result_bin=",result_bin);
                 end else begin // 减法查找
                 if(fractionBits2>=fractionBits1) begin
-                        result_bin=M2B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                        addra_M2B2 = 40+(e_diff<<3)+fractionBits2-fractionBits1-1;
+                        result_bin=douta_M2B2+fractionBits1;
                 end else begin
-                        result_bin=M2B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
+                        addra_M2B2 = 40+(e_diff<<3)+fractionBits1-fractionBits2-1+4;
+                        result_bin=douta_M2B2+fractionBits2;
                 end
             end 
       end else if (max_m_bit == 3) begin
             if (sign==0) begin // 加法查找
                 if(fractionBits2>=fractionBits1) begin
-                        result_bin=M3B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                    // $display("fractionBits2-fractionBits1=",fractionBits2-fractionBits1);
+                        addra_M3B2 = (e_diff<<4)+fractionBits2-fractionBits1-1;
+                        result_bin=douta_M3B2+fractionBits1;
                 end else begin
-                        result_bin=M3B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                end
-            end else begin // 减法查找
+                        addra_M3B2 = (e_diff<<4)+fractionBits1-fractionBits2-1+8;
+                        result_bin=douta_M3B2+fractionBits2;
+                end 
+                end else begin // 减法查找
                 if(fractionBits2>=fractionBits1) begin
-                        result_bin=M3B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                        addra_M3B2 = 96+(e_diff<<4)+fractionBits2-fractionBits1-1;
+                        result_bin=douta_M3B2+fractionBits1;
                 end else begin
-                        result_bin=M3B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
+                        addra_M3B2 = 96+(e_diff<<4)+fractionBits1-fractionBits2-1+8;
+                        result_bin=douta_M3B2+fractionBits2;
                 end
-            end 
+                end 
         end else if (max_m_bit == 4) begin
                 if (sign==0) begin // 加法查找
                     if(fractionBits2>=fractionBits1) begin
-                            result_bin=M4B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                        addra_M4B2 = (e_diff<<5)+fractionBits2-fractionBits1-1;
+                        result_bin=douta_M4B2+fractionBits1;
                     end else begin
-                            result_bin=M4B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
+                        addra_M4B2 = (e_diff<<5)+fractionBits1-fractionBits2-1+16;
+                        result_bin=douta_M4B2+fractionBits2;
                     end 
                 end else begin // 减法查找
                     if(fractionBits2>=fractionBits1) begin
-                            result_bin=M4B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                        addra_M4B2 = 224+(e_diff<<5)+fractionBits2-fractionBits1-1;
+                        result_bin=douta_M4B2+fractionBits1;
                     end else begin
-                            result_bin=M4B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                                end
+                        addra_M4B2 = 224+(e_diff<<5)+fractionBits1-fractionBits2-1+16;
+                        result_bin=douta_M4B2+fractionBits2;
+                        end
                     end
         end else if (max_m_bit == 5) begin
                     if (sign==0) begin // 加法查找
                         if(fractionBits2>=fractionBits1) begin
-                                result_bin=M5B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                                addra_M5B2 = (e_diff<<6)+fractionBits2-fractionBits1-1;
+                                result_bin=douta_M5B2+fractionBits1;
                         end else begin
-                                result_bin=M5B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
+                                addra_M5B2 = (e_diff<<6)+fractionBits1-fractionBits2-1+32;
+                                result_bin=douta_M5B2+fractionBits2;    
                         end 
                     end else begin // 减法查找
                         if(fractionBits2>=fractionBits1) begin
-                                result_bin=M5B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                                addra_M5B2 = 512+(e_diff<<6)+fractionBits2-fractionBits1-1;
+                                result_bin=douta_M5B2+fractionBits1;
                         end else begin
-                                result_bin=M5B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                        end
+                                addra_M5B2 = 512+(e_diff<<6)+fractionBits1-fractionBits2-1+32;
+                                result_bin=douta_M5B2+fractionBits2;
+                    end
                     end
         end else if (max_m_bit == 6) begin
                 if (sign==0) begin // 加法查找
                     if(fractionBits2>=fractionBits1) begin
-                            result_bin=M6B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                            addra_M6B2 = (e_diff<<7)+fractionBits2-fractionBits1-1;
+                            result_bin=douta_M6B2+fractionBits1;
                     end else begin
-                            result_bin=M6B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
+                            addra_M6B2 = (e_diff<<7)+fractionBits1-fractionBits2-1+64;
+                            result_bin=douta_M6B2+fractionBits2;
                     end 
                 end else begin // 减法查找
                         if(fractionBits2>=fractionBits1) begin
-                                result_bin=M6B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                                addra_M6B2 = 1152+(e_diff<<7)+fractionBits2-fractionBits1-1;
+                                result_bin=douta_M6B2+fractionBits1;
                         end  else begin
-                                result_bin=M6B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
+                               addra_M6B2 = 1152+(e_diff<<7)+fractionBits1-fractionBits2-1+64;
+                                result_bin=douta_M6B2+fractionBits2;
                         end
                     end
         end else if (max_m_bit == 7) begin
                     if (sign==0) begin // 加法查找
                         if(fractionBits2>=fractionBits1) begin
-                                result_bin=M7B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                                addra_M7B2 = (e_diff<<8)+fractionBits2-fractionBits1-1;
+                                 result_bin=douta_M7B2+fractionBits1;
                         end else begin
-                                result_bin=M7B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
+                                addra_M7B2 = (e_diff<<8)+fractionBits1-fractionBits2-1+128;
+                                 result_bin=douta_M7B2+fractionBits2;
                         end 
                     end else begin // 减法查找
                             if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M7B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                                addra_M7B2 = 2560+(e_diff<<8)+fractionBits2-fractionBits1-1;
+                                result_bin=douta_M7B2+fractionBits1;
                             end else begin
-                                    result_bin=M7B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
+                                addra_M7B2 = 2560+(e_diff<<8)+fractionBits1-fractionBits2-1+128;
+                                result_bin=douta_M7B2+fractionBits2;
                             end
                         end
         end else if (max_m_bit == 8) begin
                     if (sign==0) begin // 加法查找
                         if(fractionBits2>=fractionBits1) begin
-                                result_bin=M8B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                               addra_M8B2 = (e_diff<<9)+fractionBits2-fractionBits1-1;
+                                result_bin=douta_M8B2+fractionBits1;
                         end else begin
-                                result_bin=M8B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
+                                addra_M8B2 = (e_diff<<9)+fractionBits1-fractionBits2-1+256;
+                                 result_bin=douta_M8B2+fractionBits2;
                         end 
                     end else begin // 减法查找
                             if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M8B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
+                                addra_M8B2 = 5632+(e_diff<<9)+fractionBits2-fractionBits1-1;
+                                result_bin=douta_M8B2+fractionBits1;
                             end else begin
-                                    result_bin=M8B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
+                                addra_M8B2 = 5632+(e_diff<<9)+fractionBits1-fractionBits2-1+256;
+                                result_bin=douta_M8B2+fractionBits2;
                             end
                         end
-        end else if (max_m_bit == 9) begin
-                    if (sign==0) begin // 加法查找
-                        if(fractionBits2>=fractionBits1) begin
-                                result_bin=M9B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                        end else begin
-                                result_bin=M9B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                        end 
-                    end else begin // 减法查找
-                            if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M9B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                            end else begin
-                                    result_bin=M9B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                            end
-                        end
-        end else if (max_m_bit == 10) begin
-                    if (sign==0) begin // 加法查找
-                        if(fractionBits2>=fractionBits1) begin
-                                result_bin=M10B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                        end else begin
-                                result_bin=M10B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                        end 
-                    end else begin // 减法查找
-                            if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M10B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                            end else begin
-                                    result_bin=M10B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                            end
-                        end
-        end else if (max_m_bit == 11) begin
-                    if (sign==0) begin // 加法查找
-                        if(fractionBits2>=fractionBits1) begin
-                                result_bin=M11B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                        end else begin
-                                result_bin=M11B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                        end 
-                    end else begin // 减法查找
-                            if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M11B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                            end else begin
-                                    result_bin=M11B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                            end
-                        end
-        end else if (max_m_bit == 12) begin
-                    if (sign==0) begin // 加法查找
-                        if(fractionBits2>=fractionBits1) begin
-                                result_bin=M12B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                        end else begin
-                                result_bin=M12B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                        end 
-                    end else begin // 减法查找
-                            if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M12B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                            end else begin
-                                    result_bin=M12B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                            end
-                    end
-        end else if (max_m_bit == 13) begin
-                    if (sign==0) begin // 加法查找
-                        if(fractionBits2>=fractionBits1) begin
-                                result_bin=M13B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                        end else begin
-                                result_bin=M13B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                        end 
-                    end else begin // 减法查找
-                            if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M13B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                            end else begin
-                                    result_bin=M13B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                            end
-                        end
-        end else if (max_m_bit == 14) begin
-                    if (sign==0) begin // 加法查找
-                        if(fractionBits2>=fractionBits1) begin
-                                result_bin=M14B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                        end else begin
-                                result_bin=M14B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                        end 
-                    end else begin // 减法查找
-                            if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M14B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                            end else begin
-                                    result_bin=M14B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                            end
-                    end
-        end else if (max_m_bit == 15) begin
-                    if (sign==0) begin // 加法查找
-                        if(fractionBits2>=fractionBits1) begin
-                                result_bin=M15B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                        end else begin
-                                result_bin=M15B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                        end 
-                    end else begin // 减法查找
-                            if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M15B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                            end else begin
-                                    result_bin=M15B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                            end
-                        end
-        end else if (max_m_bit == 16) begin
-                    if (sign==0) begin // 加法查找
-                        if(fractionBits2>=fractionBits1) begin
-                                result_bin=M16B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                        end else begin
-                                result_bin=M16B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                        end 
-                    end else begin // 减法查找
-                            if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M16B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                            end else begin
-                                    result_bin=M16B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                            end
-                        end
-        end else if (max_m_bit == 17) begin
-                    if (sign==0) begin // 加法查找
-                        if(fractionBits2>=fractionBits1) begin
-                                result_bin=M17B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                        end else begin
-                                result_bin=M17B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                        end 
-                    end else begin // 减法查找
-                            if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M17B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                            end else begin
-                                    result_bin=M17B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                            end
-                    end
-        end else if (max_m_bit == 18) begin
-                    if (sign==0) begin // 加法查找
-                        if(fractionBits2>=fractionBits1) begin
-                                result_bin=M18B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                        end else begin
-                                result_bin=M18B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                        end 
-                    end else begin // 减法查找
-                            if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M18B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                            end else begin
-                                    result_bin=M18B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                            end
-                        end
-        end else if (max_m_bit == 19) begin
-                    if (sign==0) begin // 加法查找
-                        if(fractionBits2>=fractionBits1) begin
-                                result_bin=M19B2[0][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                        end else begin
-                                result_bin=M19B2[0][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                        end 
-                    end else begin // 减法查找
-                            if(fractionBits2>=fractionBits1) begin
-                                    result_bin=M19B2[1][e_diff][0][fractionBits2-fractionBits1]+fractionBits1;
-                            end else begin
-                                    result_bin=M19B2[1][e_diff][1][fractionBits1-fractionBits2]+fractionBits2;
-                            end
-                        end
-        end
+        end 
 
         if (2+max_m_bit>=e_diff) begin
         // $display("yse,the last way");
@@ -578,9 +494,7 @@ module Add1(
                     exponent_result = 3;
                     result[max_m_bit+:4] = exponent_result;
                     fraction_result = result_bin-(result_bin[max_m_bit+:4]<<max_m_bit);
-                // $display("result_bin=",result_bin);
-                // $display("result_bin[max_m_bit+:4]",result_bin[max_m_bit+:4]);
-                // $display("fraction_result =",fraction_result);
+                $display("result_bin=",result_bin);
                 end else begin
                     result_bias=bias1;
                     result[max_m_bit+:4] = exponent_result;
@@ -616,7 +530,6 @@ module Add1(
                 fraction_result = result_bin-(result_bin[max_m_bit+:4]<<max_m_bit);
             end
             end
-        // $display("result =",result);
         result_exp=exponent_result;
         result_man=fraction_result;
         output_m_bits=max_m_bit;
