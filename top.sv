@@ -66,7 +66,6 @@ vio_0 vio_instance (
     
 Add1 uut (
         .clk(clk),
-        .cal(sure_cal),
         .fp8Binary1(fp8Binary1),
         .fp8Binary2(fp8Binary2),
         .m_bit1(m_bit1),
@@ -75,7 +74,7 @@ Add1 uut (
         .result_bias(bias),
         .result_exp(e_binary),
         .result_man(m_binary),
-        .output_m_bits(m_bit_num),
+        .result_m_bit(m_bit_num),
         .time_period(time_used)
     );
 
